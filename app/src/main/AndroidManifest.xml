@@ -3,12 +3,13 @@
     package="thealphalabs.alphaglasslauncher" >
 
     <application
+        android:name=".home.GlassApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainActivity"
+            android:name=".home.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -16,6 +17,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".bluetooth.BluetoothTransferService"
+            android:enabled="true">
+        </service>
+        <service android:name=""
     </application>
 
 </manifest>
