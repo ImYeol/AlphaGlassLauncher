@@ -10,16 +10,17 @@ public class EventDataType {
     public static final int EventGyro=1003;
     public static final int EventNotification=1004;
     public static final int EventFacebook=1005;
+
+    public class EventDataFlag{
+
+        // Mouse
+        public static final int Motion_Touch_UP=2000;
+        public static final int Motion_Touch_Down=2001;
+        public static final int Motion_Touch_Move=2002;
+
+        // Accel
+
+        // Gyro
+    }
 }
 
-public class EventDataFlag{
-
-    // Mouse
-    public static final int Motion_Touch_UP=2000;
-    public static final int Motion_Touch_Down=2001;
-    public static final int Motion_Touch_Move=2002;
-
-    // Accel
-
-    // Gyro
-}

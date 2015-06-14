@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import thealphalabs.alphaglasslauncher.util.ConnectionInfo;
+import thealphalabs.alphaglasslauncher.util.Constants;
 
 /**
  * Created by yeol on 15. 6. 12.
@@ -39,31 +40,45 @@ public class BluetoothConnectionReceiver extends BroadcastReceiver {
 
         if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action))
         {
+            mBltManager.Destroy();
             reconnect(context, address);
         }
         else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action))
         {
             String lastRequestAddress = mConnectionInfo.getDeviceAddress();
-            if (TextUtils.isEmpty(lastRequestAddress))
-                return;
-
-            if (address.equals(lastRequestAddress))
-            {
+            if(ShouldBeConnected(lastRequestAddress,address)) {
                 mConnectionInfo.setDeviceAddress(address);
                 mConnectionInfo.setDeviceName(device.getName());
+            }
+            mBltManager.setState(BluetoothManager.STATE_CONNECTED);
+        }
+        else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+            BluetoothDevice localDevice = intent
+                    .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            String localName = device.getName();
+
+            // found another Android device of mine and start communication
+            if (localName != null ) {
+                mBltManager.connect(localDevice);
             }
         }
     }
 
-    private void reconnect(Context $context, String $address) {
+    private boolean ShouldBeConnected(String paramLastRequestAddress,String paramCurAddress) {
+        if (TextUtils.isEmpty(paramLastRequestAddress)
+                || paramLastRequestAddress.equals(paramCurAddress) == false)
+            return true;
+    }
+
+    private void reconnect(Context paramContext, String paramAddress) {
         String lastConnectAddress = ConnectionInfo.getInstance(context).getDeviceAddress();
         if (TextUtils.isEmpty(lastConnectAddress))
             return;
 
         // 연결이 끊기면 1분 마다 스캔을 다시 한다.
-        if ($address.equals(lastConnectAddress)) {
+        if (paramAddress.equals(lastConnectAddress)) {
             Log.i("DisconnectedReceiver.java | onReceive", "|==" + "스캔 다시하기" + "|");
-            ReConnectService.instance($context).autoReconnect();
+          //  ReConnectService.instance($context).autoReconnect();
         }
     }
 }

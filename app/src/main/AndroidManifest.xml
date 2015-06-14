@@ -22,7 +22,10 @@
             android:name=".bluetooth.BluetoothTransferService"
             android:enabled="true">
         </service>
-        <service android:name=""
+        <service
+            android:name=".wifi.WifiTransferService"
+            android:enabled="true">
+        </service>
     </application>
 
 </manifest>

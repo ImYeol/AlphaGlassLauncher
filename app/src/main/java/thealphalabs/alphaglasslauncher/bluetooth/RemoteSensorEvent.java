@@ -6,14 +6,31 @@ import android.os.Parcelable;
 /**
  * Created by yeol on 15. 6. 12.
  */
-public class RemoteSensorEvent implements Parcelable{
+public class RemoteSensorEvent implements Parcelable {
 
     private float x;
     private float y;
     private float z;
+    private int accuracy;
+
+    public static final Parcelable.Creator<RemoteSensorEvent> CREATOR
+            = new Parcelable.Creator<RemoteSensorEvent>() {
+        public RemoteSensorEvent createFromParcel(Parcel in) {
+            return new RemoteSensorEvent(in);
+        }
+
+        @Override
+        public RemoteSensorEvent[] newArray(int size) {
+            return new RemoteSensorEvent[size];
+        }
+    };
+
+    public RemoteSensroEvent(Parcel in) {
+        readFromParcel(in);
+    }
 
     public RemoteSensorEvent(){
-        x=0;y=0;z=0;
+        x=0;y=0;z=0;accuracy=0;
     }
     @Override
     public int describeContents() {
@@ -22,7 +39,17 @@ public class RemoteSensorEvent implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-
+        dest.writeFloat(x);
+        dest.writeFloat(y);
+        dest.writeFloat(z);
+        dest.writeInt(accuracy);
+    }
+    private void readFromParcel(Parcel in) {
+        // TODO Auto-generated method stub
+        x=in.readFloat();
+        y=in.readFloat();
+        z=in.readFloat();
+        accuracy=in.readInt();
     }
 
     public void setEventData(float x,float y,float z) {
@@ -30,4 +57,9 @@ public class RemoteSensorEvent implements Parcelable{
         this.y=y;
         this.z=z;
     }
+
+    public void setAccuracy(int paramAccuracy) {
+        accuracy=paramAccuracy;
+    }
+
 }

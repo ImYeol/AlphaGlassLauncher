@@ -44,7 +44,7 @@ public class BluetoothManager {
 
     // State constants
     public static final int STATE_NONE = 0;       // we're doing nothing
-    public static final int STATE_LISTEN = 1;     // now listening for incoming connections
+    public static final int STATE_CONNECTING = 1;     // now listening for incoming connections
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 
     private int ThreadPoolNum=3;
@@ -58,29 +58,45 @@ public class BluetoothManager {
 
     public synchronized void connect(BluetoothDevice device) {
         Log.d(TAG, "Connecting to: " + device);
+        int localState=getState();
 
-        if (mState == STATE_CONNECTED)
+        if (localState != STATE_NONE)
             return;
 
         // Cancel any thread attempting to make a connection
-        if (mState == STATE_CONNECTING) {
+        if (localState == STATE_CONNECTING) {
             if (mConnectThread != null) {
                 mConnectThread.cancel();
                 mConnectThread = null;
             }
         }
         // Cancel any thread currently running a connection
-        if (mConnectedThread != null) {
+   /*     if (mConnectedThread != null) {
             mConnectedThread.cancel();
             mConnectedThread = null;
-        }
+        } */
 
         // Start the thread to connect with the given device
         mConnectThread = new ConnectThread(device);
         mConnectThread.start();
-        setState(STATE_CONNECTING);
     }
+    public void connectDevice(String address) {
+        Log.d(TAG, "Service - connect to " + address);
 
+        // Get the BluetoothDevice object
+        if(mBluetoothAdapter != null) {
+            BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+
+            if(device != null) {
+                connect(device);
+            }
+        }
+    }
+    public void connectDevice(BluetoothDevice device) {
+        if(device != null) {
+            connect(device);
+        }
+    }
     public void setState(int state){
         writeLock.lock();
         mState=state;
@@ -97,9 +113,9 @@ public class BluetoothManager {
 
     public void Destroy() {
         Log.d(TAG, "BltManager Destroy--");
-        if(mAcceptThread != null) {
-            mAcceptThread.cancel();
-            mAcceptThread = null;
+        if(mConnectThread != null) {
+            mConnectThread.cancel();
+            mConnectThread = null;
         }
         setState(STATE_NONE);
     }
@@ -120,6 +136,7 @@ public class BluetoothManager {
                 Log.e(TAG, "create() failed", e);
             }
             mmSocket = tmp;
+            setState(STATE_CONNECTING);
         }
 
         public void run() {
@@ -144,6 +161,7 @@ public class BluetoothManager {
                 }
                 return;
             }
+            setState(STATE_CONNECTED);
             getStream();
             startConcurrentWorker();
             mConnectThread=null;
@@ -153,7 +171,7 @@ public class BluetoothManager {
             try {
                 tmpIn = mmSocket.getInputStream();
                 mmInputStream = tmpIn;
-                mmDataInputStream=new DataInputStream(mmInStream);
+                mmDataInputStream=new DataInputStream(mmInputStream);
             } catch (IOException e) {
                 Log.d(TAG,"socket.getInputStream : "+e.getMessage());
             }
@@ -200,6 +218,7 @@ public class BluetoothManager {
             }
             mmInStream = tmpIn;
             mmDataInputStream=new DataInputStream(mmInStream);
+
         }
 
         public void run()

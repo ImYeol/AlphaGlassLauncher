@@ -27,10 +27,17 @@ public class BluetoothDataHandler implements Runnable {
         mInstrumentation=new Instrumentation();
     }
     @Override
-    public void run() {
+    public synchronized void run() {
 
         while(true) {
-            int type=mDataInputStream.readInt();
+
+            int type= 0;
+
+            try {
+                type = mDataInputStream.readInt();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             switch(type){
                 case EventDataType.EventAccel:
                     sendSensorData();
@@ -60,17 +67,18 @@ public class BluetoothDataHandler implements Runnable {
         } catch (IOException e) {
             Log.d(TAG, "sendSensorData: " + e.getMessage());
         }
-        mService.sendSensorData(x,y,z);
+        mService.sendSensorData(x, y, z);
     }
     public void sendMouseData(){
-        float x=-1,y=-1;
+        float x=-1,y=-1,flag=-1;
         try {
+            flag=mDataInputStream.readInt();
             x=mDataInputStream.readFloat();
             y=mDataInputStream.readFloat();
         } catch (IOException e) {
             Log.d(TAG,"sendMouseData: "+e.getMessage());
         }
-        mInstrumentation.sendPointerSync(buildMotionEvent(x,y));
+        mInstrumentation.sendPointerSync(buildMotionEvent(x, y, flag));
     }
     public void sendTextData(){
         String text=null;
@@ -91,10 +99,11 @@ public class BluetoothDataHandler implements Runnable {
         mInstrumentation.sendStringSync(notification);
     }
 
-    public MotionEvent buildMotionEvent(float x,float y) {
+    public MotionEvent buildMotionEvent(float x,float y,int paramPressure) {
         long downTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
-        MotionEvent event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, x,y, 0);
+        MotionEvent event = MotionEvent.obtain(downTime, eventTime, paramPressure, x,y, 0);
         return event;
     }
+
 }

@@ -35,8 +35,7 @@ public class GlassApplication extends Application {
     @Override
     public void onTerminate() {
         super.onTerminate();
-        unbindService(mConnection);
-        stopService(new Intent(this, DataTransferService.class));
+        stopService(new Intent(this, BluetoothTransferService.class));
     }
 
 }

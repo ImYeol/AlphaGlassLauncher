@@ -16,12 +16,14 @@ public class BluetoothTransferHelper {
     private Context context;
     private final String TAG="BlueToothTransferHelper";
     private BluetoothTransferService.BluetoothServiceBinder mBinder;
-
+    private RemoteSensorListener mRemoteSensorListener;
+    private int ListenerType=RemoteSensor.NONE;
 
     private ServiceConnection mConn=new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBinder=(BluetoothTransferService.BluetoothServiceBinder)service;
+            mBinder.registerListener(mRemoteSensorListener,ListenerType);
         }
 
         @Override
@@ -31,24 +33,22 @@ public class BluetoothTransferHelper {
     };
     public BluetoothTransferHelper(Context context){
         this.context=context;
-        //StartConnection();
     }
 
     public void StartConnection() {
         Intent localIntent=new Intent(context,BluetoothTransferService.class);
-        IntentSender.getInstance().startService(context,localIntent);
         IntentSender.getInstance().bindService(context,localIntent,mConn,Context.BIND_AUTO_CREATE);
     }
 
     @Override
     public void StopConnection() {
-        Intent localIntent=new Intent(context,BluetoothTransferService.class);
-        IntentSender.getInstance().unbindService(context,mConn);
-        IntentSender.getInstance().stopService(context, localIntent);
+        IntentSender.getInstance().unbindService(context, mConn);
     }
 
     public void registerRemoteSensorListener(RemoteSensorListener paramListener,int paramType) {
-        mBinder.registerListener(paramListener,paramType);
+        this.mRemoteSensorListener=paramListener;
+        this.ListenerType=paramType;
+        StartConnection();
     }
 
 }
