@@ -6,10 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
-
 import thealphalabs.alphaglasslauncher.util.ConnectionInfo;
-import thealphalabs.alphaglasslauncher.util.Constants;
+
 
 /**
  * Created by yeol on 15. 6. 12.
@@ -20,20 +18,24 @@ public class BluetoothConnectionReceiver extends BroadcastReceiver {
     private BluetoothManager mBltManager;
     private ConnectionInfo mConnectionInfo;
     private Context context;
+    private ReConnectionService mReConnectionService;
 
     public BluetoothConnectionReceiver(Context paramContext,BluetoothManager paramBltManager) {
         mBltManager=paramBltManager;
         context=paramContext;
         mConnectionInfo=ConnectionInfo.getInstance(paramContext);
+        mReConnectionService=ReConnectionService.getInstance(paramContext,paramBltManager);
     }
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        Log.d(TAG,"ConnectionReceiver.java | onReceive");
+        Log.d(TAG,"onReceive");
 
         String action = intent.getAction();
         BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-        String address = device.getAddress();
+        String address=null;
+        if(device !=null)
+            address = device.getAddress();
 
         if (TextUtils.isEmpty(address))
             return;
@@ -41,7 +43,7 @@ public class BluetoothConnectionReceiver extends BroadcastReceiver {
         if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action))
         {
             mBltManager.Destroy();
-            reconnect(context, address);
+            reconnect();
         }
         else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action))
         {
@@ -50,35 +52,22 @@ public class BluetoothConnectionReceiver extends BroadcastReceiver {
                 mConnectionInfo.setDeviceAddress(address);
                 mConnectionInfo.setDeviceName(device.getName());
             }
+            Log.d(TAG,"connected:"+mBltManager);
             mBltManager.setState(BluetoothManager.STATE_CONNECTED);
         }
-        else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-            BluetoothDevice localDevice = intent
-                    .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            String localName = device.getName();
 
-            // found another Android device of mine and start communication
-            if (localName != null ) {
-                mBltManager.connect(localDevice);
-            }
-        }
     }
 
     private boolean ShouldBeConnected(String paramLastRequestAddress,String paramCurAddress) {
-        if (TextUtils.isEmpty(paramLastRequestAddress)
-                || paramLastRequestAddress.equals(paramCurAddress) == false)
+        if (TextUtils.isEmpty(paramLastRequestAddress))
             return true;
+        if(!paramCurAddress.equals(paramLastRequestAddress))
+            return true;
+        return false;
     }
 
-    private void reconnect(Context paramContext, String paramAddress) {
-        String lastConnectAddress = ConnectionInfo.getInstance(context).getDeviceAddress();
-        if (TextUtils.isEmpty(lastConnectAddress))
-            return;
-
-        // 연결이 끊기면 1분 마다 스캔을 다시 한다.
-        if (paramAddress.equals(lastConnectAddress)) {
-            Log.i("DisconnectedReceiver.java | onReceive", "|==" + "스캔 다시하기" + "|");
-          //  ReConnectService.instance($context).autoReconnect();
-        }
+    private void reconnect() {
+        mBltManager.Listening();
     }
+
 }

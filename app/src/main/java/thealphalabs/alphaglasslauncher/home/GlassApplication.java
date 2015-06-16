@@ -17,7 +17,7 @@ import thealphalabs.alphaglasslauncher.wifi.WifiTransferHelper;
 public class GlassApplication extends Application {
 
     private final String TAG="AlphaApplication";
-    private BluetoothTransferHelper mBluetoothHelper
+    private BluetoothTransferHelper mBluetoothHelper;
     private WifiTransferHelper mWifiHelper;
 
     @Override
@@ -27,9 +27,10 @@ public class GlassApplication extends Application {
     }
 
     public void init() {
+        startService(new Intent(this, BluetoothTransferService.class));
         mBluetoothHelper=new BluetoothTransferHelper(getBaseContext());
         mWifiHelper=new WifiTransferHelper(getBaseContext());
-        startService(new Intent(this, BluetoothTransferService.class));
+        mBluetoothHelper.StartConnection();
     }
 
     @Override

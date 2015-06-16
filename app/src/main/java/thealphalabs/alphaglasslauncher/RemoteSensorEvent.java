@@ -1,4 +1,4 @@
-package thealphalabs.alphaglasslauncher.bluetooth;
+package thealphalabs.alphaglasslauncher;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -25,7 +25,7 @@ public class RemoteSensorEvent implements Parcelable {
         }
     };
 
-    public RemoteSensroEvent(Parcel in) {
+    public RemoteSensorEvent(Parcel in) {
         readFromParcel(in);
     }
 

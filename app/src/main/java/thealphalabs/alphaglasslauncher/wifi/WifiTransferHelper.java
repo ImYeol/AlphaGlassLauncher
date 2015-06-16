@@ -2,13 +2,9 @@ package thealphalabs.alphaglasslauncher.wifi;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
-import thealphalabs.Interface.TransferHelperInterface;
-import thealphalabs.alphaapp.IDataTransferService;
-import thealphalabs.util.IntentSender;
 
 /**
  * Created by yeol on 15. 6. 9.

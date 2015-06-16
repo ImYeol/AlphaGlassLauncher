@@ -1,13 +1,13 @@
 package thealphalabs.alphaglasslauncher.bluetooth;
 
-import android.hardware.SensorEvent;
+import thealphalabs.alphaglasslauncher.RemoteSensorEvent;
 
 /**
  * Created by yeol on 15. 6. 12.
  */
 public interface RemoteSensorListener {
 
-    void onRemoteSensorChanged(SensorEvent event);
+    void onRemoteSensorChanged(RemoteSensorEvent event);
 
     void onRemoteSensorAccuracyChanged(int accuracy);
 }

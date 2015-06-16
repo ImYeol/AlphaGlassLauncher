@@ -40,7 +40,6 @@ public class BluetoothTransferHelper {
         IntentSender.getInstance().bindService(context,localIntent,mConn,Context.BIND_AUTO_CREATE);
     }
 
-    @Override
     public void StopConnection() {
         IntentSender.getInstance().unbindService(context, mConn);
     }
