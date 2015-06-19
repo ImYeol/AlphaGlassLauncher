@@ -14,9 +14,15 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Random;
 
 import thealphalabs.alphaglasslauncher.RemoteSensorEvent;
 import thealphalabs.alphaglasslauncher.util.ConnectionInfo;
+import thealphalabs.alphaglasslauncher.util.Constants;
+import thealphalabs.alphaglasslauncher.util.EventDataType;
 
 
 /**
@@ -30,17 +36,26 @@ public class BluetoothTransferService extends Service{
     private BluetoothConnectionReceiver SensorChangeReceiver;
     private RemoteSensorListener mCallback;
     private final IBinder mBinder= new BluetoothServiceBinder();
-    private int SensorEventType=RemoteSensor.NONE;
     private Handler mSensorDataHandler=new Handler();
     private ConnectionInfo mConnectionInfo;
-
-    private ArrayList<RemoteSensorListener> mSensorListenerList
-            = new ArrayList<RemoteSensorListener>();
+    private Hashtable<Integer,RemoteSensorListener> mGyroCallback
+            =new Hashtable<>();
+    private Hashtable<Integer,RemoteSensorListener> mAccelCallback
+            =new Hashtable<>();
 
     public class BluetoothServiceBinder extends Binder {
-        public void registerListener(RemoteSensorListener paramCallback,int paramType) {
-            BluetoothTransferService.this.mCallback=paramCallback;
-            SensorEventType=paramType;
+        public int registerListener(RemoteSensorListener paramCallback,int paramType) {
+            Random random=new Random();
+            int ID=random.nextInt(100);
+            if(paramType == RemoteSensor.ACCEL) {
+                Log.d(TAG,"accel register");
+                mAccelCallback.put(ID, paramCallback);
+            }
+            else if(paramType == RemoteSensor.GYRO) {
+                Log.d(TAG,"gyro register");
+                mGyroCallback.put(ID, paramCallback);
+            }
+            return ID;
         }
     }
 
@@ -90,6 +105,7 @@ public class BluetoothTransferService extends Service{
         IntentFilter localIntentFilter=new IntentFilter();
         localIntentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
         localIntentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        localIntentFilter.addAction(Constants.DISCONNECTION_BROADCAST);
         this.registerReceiver(SensorChangeReceiver, localIntentFilter);
     }
 
@@ -114,15 +130,33 @@ public class BluetoothTransferService extends Service{
         if(mBltManager != null)
             mBltManager.Destroy();
         mBltManager = null;
+        mGyroCallback.clear();
+        mGyroCallback=null;
+        mAccelCallback.clear();
+        mAccelCallback=null;
         unRegisterSensorChangeReceiver();
     }
 
-    public void sendSensorData(float x,float y,float z) {
-        final float finalX=x;
-        final float finalY=y;
-        final float finalZ=z;
-
-        mSensorDataHandler.post(new Runnable() {
+    public void sendSensorData(float x,float y,float z,int type) {
+        RemoteSensorEvent event=new RemoteSensorEvent();
+        event.setEventData(x, y, z);
+        event.setAccuracy(0);
+        if(type == EventDataType.EventGyro) {
+            Collection<RemoteSensorListener> cols=mGyroCallback.values();
+            for(RemoteSensorListener listener : cols) {
+                Log.d(TAG,"sendToGyroCallback");
+                listener.onRemoteSensorChanged(event);
+            }
+        }
+        else if(type == EventDataType.EventAccel) {
+            Collection<RemoteSensorListener> cols=mAccelCallback.values();
+            Log.d(TAG,"cols33333:"+ cols);
+            for(RemoteSensorListener listener : cols) {
+                Log.d(TAG,"sendToAccelCallback");
+                listener.onRemoteSensorChanged(event);
+            }
+        }
+       /* mSensorDataHandler.post(new Runnable() {
             @Override
             public void run() {
                 RemoteSensorEvent event=new RemoteSensorEvent();
@@ -130,7 +164,7 @@ public class BluetoothTransferService extends Service{
                 event.setAccuracy(0);
                 mCallback.onRemoteSensorChanged(event);
             }
-        });
+        });*/
     }
 
     public class BluetoothConnectionReceiver extends BroadcastReceiver {
@@ -164,8 +198,13 @@ public class BluetoothTransferService extends Service{
                     mConnectionInfo.setDeviceAddress(address);
                     mConnectionInfo.setDeviceName(device.getName());
                 }
-                Log.d(TAG,"connected:"+mBltManager);
                 mBltManager.setState(BluetoothManager.STATE_CONNECTED);
+            }
+            else if (Constants.DISCONNECTION_BROADCAST.equals(action)) {
+                int localID=intent.getExtras().getInt(Constants.DISCONNECTION_BROADCAST_ID);
+                if(mGyroCallback.remove(localID) == null) {
+                    mAccelCallback.remove(localID);
+                }
             }
         }
 

@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.util.Log;
+
+import thealphalabs.alphaglasslauncher.util.Constants;
 import thealphalabs.alphaglasslauncher.util.IntentSender;
 
 /**
@@ -16,18 +19,36 @@ public class BluetoothTransferHelper {
     private Context context;
     private final String TAG="BlueToothTransferHelper";
     private BluetoothTransferService.BluetoothServiceBinder mBinder;
-    private RemoteSensorListener mRemoteSensorListener;
+    private RemoteSensorListener mRemoteGyroListener;
+    private RemoteSensorListener mRemoteAccelListener;
+
     private int ListenerType=RemoteSensor.NONE;
+    private int ClientGyroID;
+    private int ClientAccelID;
 
     private ServiceConnection mConn=new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d(TAG,"Service is connected");
             mBinder=(BluetoothTransferService.BluetoothServiceBinder)service;
-            mBinder.registerListener(mRemoteSensorListener,ListenerType);
+            if(mRemoteAccelListener != null)
+                ClientAccelID=mBinder.registerListener(mRemoteAccelListener,RemoteSensor.ACCEL);
+            if(mRemoteGyroListener != null)
+                ClientGyroID=mBinder.registerListener(mRemoteGyroListener,RemoteSensor.GYRO);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            Intent localIntent=new Intent(Constants.DISCONNECTION_BROADCAST);
+            localIntent.putExtra(Constants.DISCONNECTION_BROADCAST_ID,ClientAccelID);
+            IntentSender.getInstance().sendBroadcast(context, localIntent);
+            ClientAccelID=-1;
+            mRemoteAccelListener=null;
+            localIntent.removeExtra(Constants.DISCONNECTION_BROADCAST_ID);
+            localIntent.putExtra(Constants.DISCONNECTION_BROADCAST_ID,ClientGyroID);
+            IntentSender.getInstance().sendBroadcast(context, localIntent);
+            ClientGyroID=-1;
+            mRemoteGyroListener=null;
             mBinder=null;
         }
     };
@@ -45,9 +66,17 @@ public class BluetoothTransferHelper {
     }
 
     public void registerRemoteSensorListener(RemoteSensorListener paramListener,int paramType) {
-        this.mRemoteSensorListener=paramListener;
-        this.ListenerType=paramType;
-        StartConnection();
+        Log.d(TAG,"registerRemoteSensorListener");
+        if (paramType == RemoteSensor.ACCEL) {
+            mRemoteAccelListener=paramListener;
+            if(mBinder != null)
+                ClientAccelID=mBinder.registerListener(mRemoteAccelListener,RemoteSensor.ACCEL);
+        } else if (paramType == RemoteSensor.GYRO) {
+            mRemoteGyroListener=paramListener;
+            if(mBinder != null)
+                ClientGyroID=mBinder.registerListener(mRemoteGyroListener,RemoteSensor.GYRO);
+        }
+
     }
 
 }

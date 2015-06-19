@@ -2,18 +2,52 @@ package thealphalabs.alphaglasslauncher.home;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import thealphalabs.alphaglasslauncher.R;
+import thealphalabs.alphaglasslauncher.RemoteSensorEvent;
+import thealphalabs.alphaglasslauncher.bluetooth.BluetoothTransferHelper;
+import thealphalabs.alphaglasslauncher.bluetooth.BluetoothTransferService;
+import thealphalabs.alphaglasslauncher.bluetooth.RemoteSensor;
+import thealphalabs.alphaglasslauncher.bluetooth.RemoteSensorListener;
+import thealphalabs.alphaglasslauncher.util.EventDataType;
 
 
 public class MainActivity extends Activity {
 
+    private BluetoothTransferHelper helper;
+    private static final String TAG="main";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        helper=((GlassApplication)getApplication()).getBluetoothHelper();
+        helper.registerRemoteSensorListener(new RemoteSensorListener() {
+            @Override
+            public void onRemoteSensorChanged(RemoteSensorEvent event) {
+                Log.d(TAG,"gyro x:"+event.getX() + " y:"+event.getY()+" z:"+event.getZ());
+            }
+
+            @Override
+            public void onRemoteSensorAccuracyChanged(int accuracy) {
+
+            }
+        }, RemoteSensor.GYRO);
+
+        helper.registerRemoteSensorListener(new RemoteSensorListener() {
+            @Override
+            public void onRemoteSensorChanged(RemoteSensorEvent event) {
+                Log.d(TAG,"accel x:"+event.getX() + " y:"+event.getY()+" z:"+event.getZ());
+            }
+
+            @Override
+            public void onRemoteSensorAccuracyChanged(int accuracy) {
+
+            }
+        }, RemoteSensor.ACCEL);
+
     }
 
     @Override

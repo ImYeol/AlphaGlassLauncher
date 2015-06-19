@@ -11,4 +11,7 @@ public class Constants {
 
     public static final String PREFERENCE_KEY_LAST_LAST_INIT_TIME = "LastInitData";
     public static final String PREFERENCE_KEY_IS_FIRST_EXEC = "IsFirstExec";
+
+    public static final String DISCONNECTION_BROADCAST="alpha.service.disconnection";
+    public static final String DISCONNECTION_BROADCAST_ID="alpha.service.id";
 }

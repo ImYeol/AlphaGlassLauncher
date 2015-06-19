@@ -33,10 +33,10 @@ public class BluetoothDataHandler implements Runnable {
             while ((type = mDataInputStream.readInt()) > 0) {
                 switch (type) {
                     case EventDataType.EventAccel:
-                        sendSensorData();
+                        sendSensorData(type);
                         break;
                     case EventDataType.EventGyro:
-                        sendSensorData();
+                        sendSensorData(type);
                         break;
                     case EventDataType.EventMouse:
                         sendMouseData();
@@ -54,8 +54,9 @@ public class BluetoothDataHandler implements Runnable {
         }
     }
 
-    public void sendSensorData(){
+    public void sendSensorData(int type){
         float x=-1,y=-1,z=-1;
+        Log.d(TAG, "sendSensorData: ");
         try {
             x=mDataInputStream.readFloat();
             y=mDataInputStream.readFloat();
@@ -63,7 +64,7 @@ public class BluetoothDataHandler implements Runnable {
         } catch (IOException e) {
             Log.d(TAG, "sendSensorData: " + e.getMessage());
         }
-        mService.sendSensorData(x, y, z);
+        mService.sendSensorData(x, y, z, type);
     }
     public void sendMouseData(){
         float x=-1,y=-1;

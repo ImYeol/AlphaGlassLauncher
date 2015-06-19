@@ -39,4 +39,7 @@ public class GlassApplication extends Application {
         stopService(new Intent(this, BluetoothTransferService.class));
     }
 
+    public BluetoothTransferHelper getBluetoothHelper() {
+        return mBluetoothHelper;
+    }
 }
