@@ -76,7 +76,7 @@ public class BluetoothDataHandler implements Runnable {
             Log.d(TAG,"sendMouseData: "+e.getMessage());
         }
         Log.d(TAG,"mouse data: x:"+x+" y:"+y);
-       // mInstrumentation.sendPointerSync(buildMotionEvent(x, y, flag));
+        mInstrumentation.sendPointerSync(buildMotionEvent(x, y, flag));
     }
     public void sendTextData(){
         String text=null;
@@ -86,7 +86,7 @@ public class BluetoothDataHandler implements Runnable {
             Log.d(TAG,"sendTextData: "+e.getMessage());
         }
         Log.d(TAG,"text data:"+text);
-        //mInstrumentation.sendStringSync(text);
+        mInstrumentation.sendStringSync(text);
     }
     public void sendNotificationData(){
         String notification=null;
@@ -101,7 +101,9 @@ public class BluetoothDataHandler implements Runnable {
     public MotionEvent buildMotionEvent(float x,float y,int paramPressure) {
         long downTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
+        Log.d(TAG, "buildMotionEvent");
         MotionEvent event = MotionEvent.obtain(downTime, eventTime, paramPressure, x,y, 0);
+
         return event;
     }
 
