@@ -19,7 +19,6 @@ public class GlassApplication extends Application {
     private final String TAG="AlphaApplication";
     private BluetoothTransferHelper mBluetoothHelper;
     private WifiTransferHelper mWifiHelper;
-
     @Override
     public void onCreate() {
         super.onCreate();

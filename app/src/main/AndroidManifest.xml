@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="thealphalabs.alphaglasslauncher" >
+    package="thealphalabs.alphaglasslauncher">
 
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
-    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"></uses-permission>
-    <uses-permission android:name="android.permission.INJECT_EVENTS"></uses-permission>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+
+    <uses-permission android:name="android.permission.INJECT_EVENTS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <application
         android:name=".home.GlassApplication"
         android:allowBackup="true"
@@ -25,8 +27,7 @@
         </activity>
 
         <service
-            android:name=".bluetooth.BluetoothTransferService"
-            android:enabled="true">
+            android:name=".bluetooth.BluetoothTransferService">
         </service>
         <service
             android:name=".wifi.WifiTransferService"

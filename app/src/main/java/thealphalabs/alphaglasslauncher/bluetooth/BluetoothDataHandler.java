@@ -56,7 +56,7 @@ public class BluetoothDataHandler implements Runnable {
 
     public void sendSensorData(int type){
         float x=-1,y=-1,z=-1;
-        Log.d(TAG, "sendSensorData: ");
+    //    Log.d(TAG, "sendSensorData: ");
         try {
             x=mDataInputStream.readFloat();
             y=mDataInputStream.readFloat();
@@ -76,8 +76,9 @@ public class BluetoothDataHandler implements Runnable {
         } catch (IOException e) {
             Log.d(TAG,"sendMouseData: "+e.getMessage());
         }
-        Log.d(TAG,"mouse data: x:"+x+" y:"+y);
-       // mInstrumentation.sendPointerSync(buildMotionEvent(x, y, flag));
+        mService.SendMouseData(x,y);
+      //  Log.d(TAG,"mouse data: x:"+x+" y:"+y);
+      //  mInstrumentation.sendPointerSync(buildMotionEvent(x, y, flag));
     }
     public void sendTextData(){
         String text=null;
