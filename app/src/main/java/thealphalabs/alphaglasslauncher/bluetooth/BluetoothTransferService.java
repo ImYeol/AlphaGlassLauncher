@@ -85,17 +85,17 @@ public class BluetoothTransferService extends Service{
         super.onCreate();
         Init();
 
-     /*   mView=new MouseView(this);
+        mView=new MouseView(this);
         mParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT);
         mParams.gravity = Gravity.TOP | Gravity.LEFT;
 
         mManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        mManager.addView(mView, mParams);*/
+        mManager.addView(mView, mParams);
     }
     private Handler handler=new Handler(Looper.getMainLooper());
     public void SendMouseData(float x,float y) {
@@ -117,7 +117,6 @@ public class BluetoothTransferService extends Service{
         //    requestWindowFeature(Window.FEATURE_NO_TITLE);
 
             kuma = BitmapFactory.decodeResource(context.getResources(),
-
                     R.mipmap.accel_img);
         }
 
@@ -126,8 +125,8 @@ public class BluetoothTransferService extends Service{
            // this.x -= (mx * 4f);
 
            // this.y += (my * 4f);
-            this.x=mx * w;
-            this.y=my * h;
+            this.x+=mx * w;
+            this.y+=my * h;
 
             if (this.x < 0) {
 
