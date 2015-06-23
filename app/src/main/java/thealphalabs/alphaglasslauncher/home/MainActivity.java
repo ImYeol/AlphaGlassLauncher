@@ -35,9 +35,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sensorView = new SensorView(this);
-     //   setContentView(R.layout.activity_main);
-        setContentView(sensorView);
+     //   sensorView = new SensorView(this);
+        setContentView(R.layout.activity_main);
+     //   setContentView(sensorView);
         helper=((GlassApplication)getApplication()).getBluetoothHelper();
         helper.registerRemoteSensorListener(new RemoteSensorListener() {
             @Override
