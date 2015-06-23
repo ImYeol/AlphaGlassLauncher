@@ -19,7 +19,6 @@ public class GlassApplication extends Application {
     private final String TAG="AlphaApplication";
     private BluetoothTransferHelper mBluetoothHelper;
     private WifiTransferHelper mWifiHelper;
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -39,7 +38,12 @@ public class GlassApplication extends Application {
         stopService(new Intent(this, BluetoothTransferService.class));
     }
 
+<<<<<<< HEAD
+    public BluetoothTransferHelper getBluetoothTransferHelper() {
+        return this.mBluetoothHelper;
+=======
     public BluetoothTransferHelper getBluetoothHelper() {
         return mBluetoothHelper;
+>>>>>>> 4195f439460d15b64dff44ca72a52e28646d9422
     }
 }
