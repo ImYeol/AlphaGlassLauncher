@@ -55,6 +55,12 @@ public class BluetoothTransferService extends Service{
             =new Hashtable<>();
     private Hashtable<Integer,RemoteSensorListener> mAccelCallback
             =new Hashtable<>();
+    private Handler handler=new Handler(Looper.getMainLooper());
+
+    private View mView;
+    private WindowManager.LayoutParams mParams;
+    private WindowManager mManager;
+
 
     public class BluetoothServiceBinder extends Binder {
         public int registerListener(RemoteSensorListener paramCallback,int paramType) {
@@ -77,9 +83,6 @@ public class BluetoothTransferService extends Service{
         return mBinder;
     }
 
-    private View mView;
-    private WindowManager.LayoutParams mParams;
-    private WindowManager mManager;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -97,7 +100,7 @@ public class BluetoothTransferService extends Service{
         mManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mManager.addView(mView, mParams);
     }
-    private Handler handler=new Handler(Looper.getMainLooper());
+
     public void SendMouseData(float x,float y) {
 
         ((MouseView)mView).move(x, y);

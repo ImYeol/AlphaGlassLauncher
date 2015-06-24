@@ -106,9 +106,22 @@ public class BluetoothDataHandler implements Runnable {
         } catch (IOException e) {
             Log.d(TAG,"sendMouseData: "+e.getMessage());
         }
-        mService.SendMouseData(x,y);
-      //  Log.d(TAG,"mouse data: x:"+x+" y:"+y);
-      //  mInstrumentation.sendPointerSync(buildMotionEvent(x, y, flag));
+        if( flag == MotionEvent.ACTION_SCROLL)
+            mInstrumentation.sendPointerSync(buildMotionEvent(x,y,flag));
+        else if(flag == MotionEvent.ACTION_UP)
+            SyncClickEvent(x,y);
+        else
+            mService.SendMouseData(x,y);
+    }
+    private void SyncClickEvent(float x,float y) {
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = SystemClock.uptimeMillis();
+        MotionEvent event = MotionEvent.obtain(downTime, eventTime,
+                MotionEvent.ACTION_DOWN, x ,y, 0);
+        MotionEvent event2 = MotionEvent.obtain(downTime, eventTime,
+                MotionEvent.ACTION_UP, x, y, 0);
+        mInstrumentation.sendPointerSync(event);
+        mInstrumentation.sendPointerSync(event2);
     }
     public void sendTextData(){
         String text=null;
