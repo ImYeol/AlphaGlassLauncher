@@ -8,9 +8,11 @@ import android.os.Handler;
 import android.util.Log;
 
 import java.io.DataInputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,7 +44,9 @@ public class BluetoothManager {
     private BluetoothServerSocket mServerSocket;
     private BluetoothSocket mClientSocket;
     private DataInputStream mDataInputStream;
+    private DataOutputStream mDataOutputStream;
     private InputStream mInputStream;
+    private OutputStream mOutputStream;
     private ExecutorService concurrentWorker= Executors.newFixedThreadPool(ThreadPoolNum);
 
     // State constants
@@ -114,6 +118,7 @@ public class BluetoothManager {
         }
 
         public void run() {
+            Log.d(TAG, "AcceptThread run()");
             BluetoothSocket socket = null;
             // Keep listening until exception occurs or a socket is returned
             while (true) {
@@ -138,7 +143,9 @@ public class BluetoothManager {
         public void getStream() {
             try {
                 mInputStream=mClientSocket.getInputStream();
+                mOutputStream=mClientSocket.getOutputStream();
                 mDataInputStream=new DataInputStream(mInputStream);
+                mDataOutputStream = new DataOutputStream(mOutputStream);
             } catch (IOException e) {
                 Log.d(TAG,"socket.getInputStream : "+e.getMessage());
             }
@@ -149,7 +156,7 @@ public class BluetoothManager {
                 concurrentWorker=Executors.newFixedThreadPool(ThreadPoolNum);
 
             try {
-                concurrentWorker.execute(new BluetoothDataHandler(mBluetoothService, mDataInputStream));
+                concurrentWorker.execute(new BluetoothDataHandler(mBluetoothService, mDataInputStream, mDataOutputStream));
             } catch (RejectedExecutionException e) {
                 Log.d(TAG,"StartConcurrentWorker() rejected :"+e.getMessage());
             }

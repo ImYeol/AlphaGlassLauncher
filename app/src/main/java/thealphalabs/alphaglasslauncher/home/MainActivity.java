@@ -30,11 +30,14 @@ public class MainActivity extends Activity {
     private BluetoothTransferHelper helper;
     private static final String TAG="main";
 
+    public static Context context;
     private SensorView sensorView;
     private Handler handler=new Handler(Looper.getMainLooper());
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        context = this;
         sensorView = new SensorView(this);
      //   setContentView(R.layout.activity_main);
         setContentView(sensorView);
@@ -53,6 +56,7 @@ public class MainActivity extends Activity {
         helper.registerRemoteSensorListener(new RemoteSensorListener() {
             @Override
             public void onRemoteSensorChanged(RemoteSensorEvent event) {
+                Log.d(TAG, "onRemoteSensorChanged");
               //  final float finalX=event.getX();
               //  final float finalY=event.getY();
                /* runOnUiThread(new Runnable() {

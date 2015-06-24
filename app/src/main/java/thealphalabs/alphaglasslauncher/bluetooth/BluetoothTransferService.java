@@ -281,9 +281,6 @@ public class BluetoothTransferService extends Service{
         }
         @Override
         public void onReceive(Context context, Intent intent) {
-
-            Log.d(TAG,"onReceive");
-
             String action = intent.getAction();
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             String address = device.getAddress();

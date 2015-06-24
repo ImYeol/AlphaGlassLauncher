@@ -10,6 +10,7 @@ public class EventDataType {
     public static final int EventGyro=1003;
     public static final int EventNotification=1004;
     public static final int EventFacebook=1005;
+    public static final int EventFileTransfer=1006;
 
     public class EventDataFlag{
 
