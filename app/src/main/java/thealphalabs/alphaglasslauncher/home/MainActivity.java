@@ -1,11 +1,18 @@
 package thealphalabs.alphaglasslauncher.home;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.net.NetworkInfo;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pGroup;
+import android.net.wifi.p2p.WifiP2pInfo;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,6 +22,12 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import thealphalabs.alphaglasslauncher.R;
 import thealphalabs.alphaglasslauncher.RemoteSensorEvent;
@@ -33,6 +46,26 @@ public class MainActivity extends Activity {
     public static Context context;
     private SensorView sensorView;
     private Handler handler=new Handler(Looper.getMainLooper());
+
+    /** WifiP2pManager */
+    private WifiP2pManager mWifiP2pManager;
+    /** Channel */
+    private WifiP2pManager.Channel mChannel;
+    /** peers */
+    private List<WifiP2pDevice> mPeers = new ArrayList<WifiP2pDevice>();
+    /** 選択中の子 */
+    private String mSelectedDevice;
+    private boolean mIsAppBoot;
+
+    private BroadcastReceiver mReceiver;
+    private boolean mIsWiFiDirectEnabled;
+    private ActionListenerAdapter mActionListenerAdapter;
+
+    /** p2p Control Port */
+    private int mP2pControlPort = -1;
+    /** p2p interface name */
+    private String mP2pInterfaceName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,8 +78,9 @@ public class MainActivity extends Activity {
         helper.registerRemoteSensorListener(new RemoteSensorListener() {
             @Override
             public void onRemoteSensorChanged(RemoteSensorEvent event) {
-                Log.d(TAG,"gyro x:"+event.getX() + " y:"+event.getY()+" z:"+event.getZ());
+                Log.d(TAG, "gyro x:" + event.getX() + " y:" + event.getY() + " z:" + event.getZ());
             }
+
             @Override
             public void onRemoteSensorAccuracyChanged(int accuracy) {
 
@@ -57,15 +91,15 @@ public class MainActivity extends Activity {
             @Override
             public void onRemoteSensorChanged(RemoteSensorEvent event) {
                 Log.d(TAG, "onRemoteSensorChanged");
-              //  final float finalX=event.getX();
-              //  final float finalY=event.getY();
+                //  final float finalX=event.getX();
+                //  final float finalY=event.getY();
                /* runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         sensorView.move(finalX, finalY);
                     }
                 }); */
-                sensorView.move(event.getX(),event.getY());
+                sensorView.move(event.getX(), event.getY());
             }
 
             @Override
@@ -77,37 +111,338 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    protected void onResume() {
+        super.onResume();
+        registerBroadcastReceiver();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    private void registerBroadcastReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        filter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+        filter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        filter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        mReceiver = new WiFiDirectBroadcastReceiver();
+        registerReceiver(mReceiver, filter);
+        Log.d(TAG, "registerBroadcastReceiver() BroadcastReceiver");
+    }
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+    private void unRegisterBroadcastReceiver() {
+        if (mReceiver != null) {
+            unregisterReceiver(mReceiver);
+            mReceiver = null;
+            Log.d(TAG,"unRegisterBroadcastReceiver() BroadcastReceiver");
         }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Log.d(TAG,"onTouchEvent x:"+event.getX());
-        return super.onTouchEvent(event);
     }
 
     @Override
     protected void onDestroy() {
         stopService(new Intent(this, BluetoothTransferService.class));
         super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unRegisterBroadcastReceiver();
+    }
+
+    private void log(String s) {
+        Log.d(TAG,s);
+    }
+    class ActionListenerAdapter implements WifiP2pManager.ActionListener {
+
+        // 成功
+        public void onSuccess() {
+            log("succes");
+        }
+
+        // 失敗
+        public void onFailure(int reason) {
+            String log = " onFailure("+getReason(reason)+")";
+            log(log);
+        }
+
+        // 失敗理由intコード -> 文字列変換
+        private String getReason(int reason) {
+            String[] strs = {"ERROR", "P2P_UNSUPPORTED", "BUSY"};
+            try {
+                return strs[reason] + "("+reason+")";
+            } catch (ArrayIndexOutOfBoundsException e) {
+                return "UNKNOWN REASON CODE("+reason+")";
+            }
+        }
+    }
+
+    public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            String log = "onReceive() ["+action+"]";
+            log(log);
+
+            if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
+                mIsWiFiDirectEnabled = false;
+                int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
+                String sttStr;
+                switch (state) {
+                    case WifiP2pManager.WIFI_P2P_STATE_ENABLED:
+                        mIsWiFiDirectEnabled = true;
+                        sttStr = "ENABLED";
+                        break;
+                    case WifiP2pManager.WIFI_P2P_STATE_DISABLED:
+                        sttStr = "DISABLED";
+                        break;
+                    default:
+                        sttStr = "UNKNOWN";
+                        break;
+                }
+                log("state[" + sttStr + "](" + state + ")");
+
+                if (mIsWiFiDirectEnabled) {
+                    onClickGetSystemService(null);
+                    onClickInitialize(null);
+                }
+            } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
+                log("try requestPeers()");
+            } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
+                NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+                // invoke Sink
+                if (networkInfo.isConnected()) {
+                    mIsAppBoot = false;
+                    invokeSink();
+                } else if (!mIsAppBoot) {
+                    //finish();
+                    System.exit(0); // force finish Sink Screen. TODO FIXME^^;;
+                }
+            } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
+                WifiP2pDevice device = (WifiP2pDevice) intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+                log("device:"device.toString() + " status:" +getDeviceStatus(device.status));
+
+                // Search
+                if (mIsWiFiDirectEnabled) {
+                    onClickDiscoverPeers(null);
+                }
+            }
+        }
+    }
+    private String getDeviceStatus(int deviceStatus) {
+        String status = "";
+        switch (deviceStatus) {
+            case WifiP2pDevice.AVAILABLE:
+                status = "Available";
+                break;
+            case WifiP2pDevice.INVITED:
+                status = "Invited";
+                break;
+            case WifiP2pDevice.CONNECTED:
+                status = "Connected";
+                break;
+            case WifiP2pDevice.FAILED:
+                status = "Failed";
+                break;
+            case WifiP2pDevice.UNAVAILABLE:
+                status = "Unavailable";
+                break;
+            default:
+                status = "Unknown";
+                break;
+        }
+        return status;
+    }
+
+    public void onClickGetSystemService(View view) {
+        log("getSystemService(Context.WIFI_P2P_SERVICE)");
+
+        mWifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+
+        log("　Result[" + (mWifiP2pManager != null) + "]");
+    }
+    public void onClickDiscoverPeers(View view) {
+        log("mWifiP2pManager.discoverPeers()");
+        if (isNull(true)) { return; }
+
+        mWifiP2pManager.discoverPeers(mChannel, mActionListenerAdapter);
+    }
+    public void onClickInitialize(View view) {
+        log("mWifiP2pManager.initialize()");
+        if (isNull(false)) { return; }
+
+        mChannel = mWifiP2pManager.initialize(this, getMainLooper(), new WifiP2pManager.ChannelListener() {
+            public void onChannelDisconnected() {
+                log("mWifiP2pManager.initialize() -> onChannelDisconnected()");
+            }
+        });
+
+        log("　Result[" + (mChannel != null) + "]");
+    }
+
+    private boolean isNull(boolean both) {
+        if (mActionListenerAdapter == null) {
+            mActionListenerAdapter = new ActionListenerAdapter();
+        }
+
+        if (!mIsWiFiDirectEnabled) {
+            log(" Wi-Fi Direct is OFF! try Setting Menu");
+            return true;
+        }
+
+        if (mWifiP2pManager == null) {
+            log(" mWifiP2pManager is NULL! try getSystemService");
+            return true;
+        }
+        if (both && (mChannel == null) ) {
+            log(" mChannel is NULL!  try initialize");
+            return true;
+        }
+
+        return false;
+    }
+
+    private void invokeSink() {
+        log("invokeSink() call requestGroupInfo()");
+        if (isNull(true)) { return; }
+
+        mWifiP2pManager.requestGroupInfo(mChannel, new WifiP2pManager.GroupInfoListener() {
+            // requestGroupInfo()実行後、非同期応答あり
+            public void onGroupInfoAvailable(WifiP2pGroup group) {
+                log("　onGroupInfoAvailable():");
+                if (group == null) {
+                    log("  group is NULL!");
+                    return;
+                }
+
+                String log = group.toString();
+
+                // パスワードは、G.O.のみ取得可能
+                String pass ="　password: ";
+                if (group.isGroupOwner()) {
+                    pass += group.getPassphrase();
+                } else {
+                    pass += "Client Couldn't Get Password";
+                }
+                log(log);
+
+                mP2pControlPort = -1;
+                // Miracast device filtering
+                Collection<WifiP2pDevice> p2pdevs = group.getClientList();
+                //AssertEqual(p2pdevs.size(), 1); // one device?
+                for (WifiP2pDevice dev : p2pdevs) {
+                    boolean b = isWifiDisplaySource(dev);
+
+                    log("invokeSink() isWifiDisplaySource(" + dev.deviceName + ")=[" + b + "]");
+                    if (!b) {
+                        continue;
+                        // return; // because not Miracast Source device
+                    }
+                }
+                if (mP2pControlPort == -1) {
+                    //final class WifiDisplayController implements DumpUtils.Dump {
+                    //    private static final int DEFAULT_CONTROL_PORT = 7236;
+                    mP2pControlPort = 7236;
+                    log("invokeSink() port=-1?? p2pdevs.size()=["+p2pdevs.size()+"] port assigned=7236");
+                }
+
+                // connect
+                if (group.isGroupOwner()) { // G.O. don't know client IP, so check /proc/net/arp
+                    mP2pInterfaceName = group.getInterface();
+
+                    mArpTableObservationTimer = new Timer();
+                    ArpTableObservationTask task = new ArpTableObservationTask();
+                    mArpTableObservationTimer.scheduleAtFixedRate(task, 10, 1*1000); // 10ms後から1秒間隔でarpファイルをチェック
+                } else { // this device is not G.O. get G.O. address
+                    invokeSink2nd();
+                }
+            }
+        });
+    }
+    private void invokeSink2nd() {
+        log("invokeSink2nd() requestConnectionInfo()");
+        if (isNull(true)) { return; }
+
+        mWifiP2pManager.requestConnectionInfo(mChannel, new WifiP2pManager.ConnectionInfoListener() {
+            // requestConnectionInfo()実行後、非同期応答あり
+            public void onConnectionInfoAvailable(WifiP2pInfo info) {
+                log("　onConnectionInfoAvailable():");
+                if (info == null) {
+                    log("  info is NULL!");
+                    return;
+                }
+
+                log("  groupFormed:" + info.groupFormed);
+                log("  isGroupOwner:" + info.isGroupOwner);
+                log("  groupOwnerAddress:" + info.groupOwnerAddress);
+
+                if (!info.groupFormed) {
+                    log("  not yet groupFormed!");
+                    return;
+                }
+
+                if (info.isGroupOwner) {
+                    log("  I'm G.O.? Illegal State!!");
+                    return;
+                } else {
+                    String source_ip = info.groupOwnerAddress.getHostAddress();
+                    delayedInvokeSink(source_ip, mP2pControlPort, 3);
+                }
+            }
+        });
+    }
+    private boolean isWifiDisplaySource(WifiP2pDevice dev) {
+        if (dev == null || dev.wfdInfo == null) {
+            return false;
+        }
+
+        WifiP2pWfdInfo wfd = dev.wfdInfo;
+        if (!wfd.isWfdEnabled()) {
+            return false;
+        }
+
+        int type = wfd.getDeviceType();
+        mP2pControlPort = wfd.getControlPort();
+
+        boolean source = (type == WifiP2pWfdInfo.WFD_SOURCE) || (type == WifiP2pWfdInfo.SOURCE_OR_PRIMARY_SINK);
+        log("isWifiDisplaySource() type[" + type + "] is-source[" + source + "] port[" + mP2pControlPort + "]");
+        return source;
+    }
+
+    private Timer mArpTableObservationTimer;
+    /** arpファイル読み込みリトライ回数 */
+    private int mArpRetryCount = 0;
+    /** arpファイル読み込み上限回数 */
+    private final int MAX_ARP_RETRY_COUNT = 60;
+
+
+    class ArpTableObservationTask extends TimerTask {
+        @Override
+        public void run() {
+            // arpテーブル読み込み
+            RarpImpl rarp = new RarpImpl();
+            String source_ip = rarp.execRarp(mP2pInterfaceName);
+
+            // リトライ
+            if (source_ip == null) {
+                Log.d(TAG, "retry:" + mArpRetryCount);
+                if (++mArpRetryCount > MAX_ARP_RETRY_COUNT) {
+                    mArpTableObservationTimer.cancel();
+                    return;
+                }
+                return;
+            }
+
+            mArpTableObservationTimer.cancel();
+            delayedInvokeSink(source_ip, mP2pControlPort, 3);
+        }
+    }
+
+    private void delayedInvokeSink(final String ip, final int port, int delaySec) {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+               nativeSink(ip, port);
+            }
+        }, delaySec * 1000);
     }
 
     class SensorView extends View {
@@ -191,4 +526,37 @@ public class MainActivity extends Activity {
 
     }
 
+    private void nativeSink(String ip,int port) {
+        Log.d(TAG, "invokeSink() Source Addr["+ip+":"+port+"]");
+        new AvoidANRThread(false, ip, port).start();
+    }
+
+    private static class AvoidANRThread extends Thread {
+        private final boolean source;
+        private final String ip;
+        private final int port;
+
+        AvoidANRThread(boolean _source, String _ip, int _port) {
+            source = _source;
+            ip = _ip;
+            port = _port;
+        }
+
+        public void run() {
+            if (source) {
+             //   nativeInvokeSource(ip, port);
+            } else {
+                nativeInvokeSink(ip, port);
+            }
+        }
+    }
+
+    /**
+     * JNI:invoke Sink
+     */
+    private static native void nativeInvokeSink(String ip, int port);
+
+    static {
+        System.loadLibrary("Mira4U");
+    }
 }
