@@ -19,7 +19,7 @@ import android.net.wifi.p2p.WifiP2pManager.ChannelListener;
 import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
 import android.net.wifi.p2p.WifiP2pManager.GroupInfoListener;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
-import android.net.wifi.p2p.WifiP2pWfdInfo;
+//import android.net.wifi.p2p.WifiP2pWfdInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -445,7 +445,7 @@ public class MainActivity extends Activity {
         });
     }
     private boolean isWifiDisplaySource(WifiP2pDevice dev) {
-        if (dev == null || dev.wfdInfo == null) {
+  /*      if (dev == null || dev.wfdInfo == null) {
             return false;
         }
 
@@ -459,7 +459,7 @@ public class MainActivity extends Activity {
 
         boolean source = (type == WifiP2pWfdInfo.WFD_SOURCE) || (type == WifiP2pWfdInfo.SOURCE_OR_PRIMARY_SINK);
         log("isWifiDisplaySource() type[" + type + "] is-source[" + source + "] port[" + mP2pControlPort + "]");
-        return source;
+        return source;*/
     }
 
     private Timer mArpTableObservationTimer;

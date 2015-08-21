@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="22.2.0"><source path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/build/intermediates/exploded-aar/com.android.support/support-v4/22.2.0/res"/></dataSet><dataSet config="main"><source path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res"><file path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/values/colors.xml" qualifiers=""><color name="black_overlay">#66000000</color></file><file path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/values/attrs.xml" qualifiers=""><declare-styleable name="ButtonBarContainerTheme">
+        <attr format="reference" name="metaButtonBarStyle"/>
+        <attr format="reference" name="metaButtonBarButtonStyle"/>
+    </declare-styleable></file><file path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/values/dimens.xml" qualifiers=""><dimen name="activity_vertical_margin">16dp</dimen><dimen name="activity_horizontal_margin">16dp</dimen></file><file path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/values/styles.xml" qualifiers=""><style name="AppTheme" parent="AppBaseTheme">
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    </style><style name="ButtonBarButton"/><style name="ButtonBar">
+        <item name="android:paddingLeft">2dp</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingRight">2dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:background">@android:drawable/bottom_bar</item>
+    </style><style name="FullscreenTheme" parent="android:Theme.NoTitleBar">
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowBackground">@null</item>
+        <item name="metaButtonBarStyle">@style/ButtonBar</item>
+        <item name="metaButtonBarButtonStyle">@style/ButtonBarButton</item>
+    </style><style name="AppBaseTheme" parent="android:Theme.Light">
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+        -->
+    </style></file><file path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/values/strings.xml" qualifiers=""><string name="hello_world">Hello world!</string><string name="title_activity_voice">VoiceActivity</string><string name="dummy_button">Dummy Button</string><string name="action_settings">Settings</string><string name="app_name">alphaglasslauncher</string><string name="dummy_content">DUMMY\nCONTENT</string></file><file name="ic_launcher" path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/drawable-hdpi/ic_launcher.png" qualifiers="hdpi" type="drawable"/><file name="accel_img" path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/drawable-hdpi/accel_img.png" qualifiers="hdpi" type="drawable"/><file name="ic_launcher" path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/drawable-xhdpi/ic_launcher.png" qualifiers="xhdpi" type="drawable"/><file name="main" path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/menu/main.xml" qualifiers="" type="menu"/><file path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/values-w820dp/dimens.xml" qualifiers="w820dp"><dimen name="activity_horizontal_margin">64dp</dimen></file><file name="ic_launcher" path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/drawable-xxhdpi/ic_launcher.png" qualifiers="xxhdpi" type="drawable"/><file path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/values-v11/styles.xml" qualifiers="v11"><style name="FullscreenTheme" parent="android:Theme.Holo">
+        <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowBackground">@null</item>
+        <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
+        <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
+    </style><style name="AppBaseTheme" parent="android:Theme.Holo.Light">
+        <!-- API 11 theme customizations can go here. -->
+    </style><style name="FullscreenActionBarStyle" parent="android:Widget.Holo.ActionBar">
+        <item name="android:background">@color/black_overlay</item>
+    </style></file><file name="activity_main" path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/layout/activity_main.xml" qualifiers="" type="layout"/><file name="grid_view" path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/layout/grid_view.xml" qualifiers="" type="layout"/><file name="listview" path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/layout/listview.xml" qualifiers="" type="layout"/><file name="icon_view" path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/layout/icon_view.xml" qualifiers="" type="layout"/><file name="voice_main_view" path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/layout/voice_main_view.xml" qualifiers="" type="layout"/><file name="mouse_view" path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/layout/mouse_view.xml" qualifiers="" type="layout"/><file name="ic_launcher" path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/drawable-mdpi/ic_launcher.png" qualifiers="mdpi" type="drawable"/><file path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/res/values-v14/styles.xml" qualifiers="v14"><style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+        <!-- API 14 theme customizations can go here. -->
+    </style></file></source><source path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/build/generated/res/rs/debug"/><source path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/build/generated/res/generated/debug"/></dataSet><dataSet config="debug"><source path="/home/yeol/AndroidStudioProjects/AlphaGlassLauncher/build-types/debug/res"/></dataSet><mergedItems><configuration qualifiers=""><declare-styleable name="ButtonBarContainerTheme"><attr format="reference" name="metaButtonBarStyle"/><attr format="reference" name="metaButtonBarButtonStyle"/></declare-styleable></configuration></mergedItems></merger>

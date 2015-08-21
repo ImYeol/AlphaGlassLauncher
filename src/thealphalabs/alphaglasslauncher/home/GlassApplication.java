@@ -23,7 +23,7 @@ public class GlassApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        init();
+    //    init();
     }
 
     public void init() {
@@ -36,7 +36,7 @@ public class GlassApplication extends Application {
     @Override
     public void onTerminate() {
         super.onTerminate();
-        stopService(new Intent(this, BluetoothTransferService.class));
+     //   stopService(new Intent(this, BluetoothTransferService.class));
     }
 
     public BluetoothTransferHelper getBluetoothHelper() {
